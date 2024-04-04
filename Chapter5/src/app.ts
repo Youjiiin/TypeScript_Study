@@ -1,102 +1,63 @@
-class Department {
-    // private id: string;
-    // private name: string;
-    protected employees: string[] = [];
-    //protected는 private와 유사하지만 이는 상속받은 클래스에서도 사용 가능하다. 
+// 인터페이스는 클래스, 메서드의 구조를 정의
+// 객체의 구조와 인터페이스의 구조와 일치하는지 타입을 확인할 수 있다.
+// 값은 할당할 수 없다.(고정값 포함)
 
-    constructor(private readonly id: string, public name: string) { //생성자
-        // 정의 + 할당
-        // readonly : 읽기 전용 ->  한번 생성하면 수정금지
-        // this.id = id;
-        // this.name = n;
-    }
+// 사실 interface 대신 type을 사용해서 커스텀 타입으로 사용해도 되긴한다.
+// 하지만, 같은 것이 아니다.
+// 인터페이스가 훨씬 명확하다.
+// 인터페이스로 정의하면 객체의 구조를 정의하고자 한다는 것을 명확히 할 수 있다.
+// + 클래스 안에 인터페이스를 구현할 수 있다.
 
-    describe(this: Department) { //메서드
-        //this 키워드가 항상 Department 클래스 객체를 참조
-        console.log(`Department(${this.id}): ${this.name}`);
-    }
+// 두 클래스에 하나의 메서드가 존재하도록 강제하는 인터페이스를 구현하도록 하는 것이 인터페이스의 존재이유 
 
-    addEmployee(employee: string) {
-        this.employees.push(employee);
-    }
-
-    printEmployeeInformation() {
-        console.log(this.employees.length);
-        console.log(this.employees);
-    }
+//type AddFn = (a: number, b: number) => number;
+interface AddFn {
+    (a: number, b: number): number;
 }
 
-class ITDepartment extends Department {
-    admins: string[];
-    constructor(id: string, admins: string[]) {
-        super(id, 'IT');
-        //super: 기본 클래스의 생성자를 호출(부모 클래스의 생성자 인수를 받는다. + 값 전달)
-        this.admins = admins;
-    }
+let add: AddFn;
+
+add = (n1: number, n2: number) => {
+    return n1 + n2;
 }
 
-class AccountingDepartment extends Department {
-    private lastReport: string;
-
-    get mostRecentReport() {
-        if (this.lastReport) {
-            return this.lastReport;
-        }
-        throw new Error('No report found.');
-    }
-
-    set mostRecentReport(value: string) {
-        if (!value) {
-            throw new Error('No report found.');
-        }
-        this.addReport(value);
-    }
-
-    constructor(id: string, private reports: string[]){
-        super(id, 'Accounting');
-        this.lastReport = reports[0];
-    }
-
-    addEmployee(name: string) {
-        if (name === 'Max') {
-            return;
-        }
-        this.employees.push(name);
-    }
-
-    addReport(text: string) {
-        this.reports.push(text);
-        this.lastReport = text;
-    }
-
-    printReports() {
-        console.log(this.reports);
-    }
+interface Named {
+    // public, private는 불가능하지만 읽기전용은 가능
+    readonly name?: string;
+    outputName?: string;
+    // 이 프로퍼티는 있어도되고 없어도 된다. (?을 붙이기)
 }
 
-const department = new Department('a', 'Accounting');
-const it = new ITDepartment('a', ['Yujin']);
-const accounting = new AccountingDepartment('d2', [])
+interface Greetable extends Named{
+    greet(pharse: string): void;
+}
 
-department.addEmployee('Max');
-department.addEmployee('Manu');
-//accounting.employees[2] = 'Anna';
-//private면 설정 안됨
+// 인터페이스는 여러개 상속받을 수 있다.
+class Person implements Greetable {
+  name?: string;
+  age = 25;
 
-department.describe();
-department.printEmployeeInformation();
+  constructor(n?: string) {
+    if (n) {
+        this.name = n;
+    }
+  }
 
-console.log(it);
+  greet(pharse: string) {
+    if(this.name) {
+        console.log(pharse + " " + this.name);
+    } else {
+        console.log('hi')
+    }
+  }
+}
 
-accounting.mostRecentReport = '하하';
-accounting.addReport('클났다..');
-accounting.addEmployee('Max');
-accounting.addEmployee('Yujin');
-accounting.printEmployeeInformation();
-accounting.printReports();
-console.log(accounting.mostRecentReport);
+// 추상 클래스는 오버라이드할 추상 메서드를 제공하면서도 완전히 구현된 부분도 함께 제공 가능
+// 인터페이스는 공통된 구현을 인터페이스를 사용해 클래스에 포함되어야 하는 기능의 구조를 정의할 수 있다. (구현 X)
 
-//const accountingCopy = { name: 'DUMMY', describe: accounting.describe };
-//accountingCopy.describe(); 
-// 호출한 객체를 참조만하고 있을 뿐, 메서드를 실행하는 것이 아니다. 값을 전달하지 않는다.
-//메서드에 this키워드를 작성해주면 오류 발생 -> 프로퍼티 전달해주면 됨
+let user1: Greetable;
+// 객체 생성
+user1 = new Person();
+
+user1.greet("Hiiiiiiiiiiiiii I'm");
+console.log(user1);
