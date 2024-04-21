@@ -80,3 +80,33 @@ function useVehicle(vehicle: Vehicle) {
 
 useVehicle(v1);
 useVehicle(v2);
+
+// 타입 가드 - 객체
+// 유니언에 속한 모든 객체에 객체를 설명하는 속성을 이용하면 조건을 확인하는 부분에서 타입이 보장된다. 어떤 속성을 활용할 수 있는지 객체에 따라 판단할 수 있다. 
+// 인터페이스는 자바스크립트에서 인식할 수 없으므로 이러한 방식을 채택해야 한다. (+ 오타)
+interface Bird {
+    type: 'bird'; // 리터럴
+    flyingSpeed: number;
+}
+
+interface Horse {
+    type: 'horse';
+    runningSpeed: number;
+}
+
+type Animal = Bird | Horse;
+
+function moveAnimal(animal: Animal) {
+    let speed;
+    switch (animal.type) {
+        case 'bird':
+            speed = animal.flyingSpeed;
+            break
+        case 'horse':
+            speed = animal.runningSpeed;
+            break
+    }
+    console.log('Moving with speed : ' + speed);
+}
+
+moveAnimal({type: 'bird', flyingSpeed: 100})
