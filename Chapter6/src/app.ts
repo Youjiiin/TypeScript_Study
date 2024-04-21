@@ -110,3 +110,17 @@ function moveAnimal(animal: Animal) {
 }
 
 moveAnimal({type: 'bird', flyingSpeed: 100})
+
+//형변환
+//타입스크립트에서 일종의 타입인 HTML요소는 일반적인 것이고, 특정 HTML요소에 특화된 속성을 지원하지 않는다. 
+
+//const userInputElement = <HTMLInputElement>document.getElementById('user-input')!;
+
+const userInputElement = document.getElementById('user-input') as HTMLInputElement;
+// 리액트에서 jsx와 혼동되는 것을 막기 위해
+// ! : 절대 null이 반환되지 않을 것이다.
+// -> 모르면 if 문
+
+if (userInputElement){
+    userInputElement.value = 'Hiiiiii';
+}
