@@ -157,3 +157,17 @@ const myName = add('Jang', ' Yujin');
 // 형변환으로는 알려줄 수 있음
 // const myName = add('Jang', ' Yujin') as string; ->  최선?
 // 오버로딩은 타입스크립트가 스스로 반환값 타입을 식별할 수 없을 때 사용하는 것이다. 
+
+
+// 선택적 체이닝
+const fetchedUserData = {
+    id: 'u1',
+    name: 'Yujin',
+    job: { title: 'CEO', description: 'My own company' }
+};
+
+// 자바스크립트에서는 이와 같이 하면, 객체안에 존재를 확인하고 진행해서 런타임 에러가 발생하지 않는다. 
+// 하지만, 타입스크립트는 존재하지 않는 걸 알아서 오류가 발생한다. 
+//console.log(fetchedUserData.job && fetchedUserData.job.title);
+console.log(fetchedUserData?.job?.title);
+// 옵셔널 체이닝 : 중첩된 속성이랑, 객체 안에 중첩된 객체의 정보를 안전하게 접근하게 해준다.
