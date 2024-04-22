@@ -27,6 +27,13 @@ type Numberic = number | boolean;
 // 객체 타입을 교차시킨다면 각 객체의 속성을 모두 조합한 게 교차 결과 (ex: ElevatedEmployee)
 type Universal = Combinable & Numberic;
 
+// 타입스크립트에서 위아래의 함수를 조합해서 컴파일 한다. (자바스크립트에선 없는 것)
+// 오버로딩시에 인자의 수를 줄이거나 늘릴 수 있다. 
+//function add(n: number): number;
+function add(a: number, b: number): number;
+function add(a: string, b: string): string;
+function add(a: number, b: string): string;
+function add(a: string, b: number): string;
 function add(a: Combinable, b: Combinable) {
     if (typeof a === 'string' || typeof b === 'string') {
         return a.toString() + b.toString();
@@ -139,3 +146,14 @@ const errorBag: ErrorContainer = {
     email: 'Not valid',
     username: 'Must start with a capital character!'
 };
+
+// 함수 오버로딩
+// 여러 함수의 시그니처를 정의
+// 하나의 함수를 두고, 한 함수를 다양한 방식으로 호출할 수 있음(다른 인자를 넣어서)
+const result = add(1, 5);
+const myName = add('Jang', ' Yujin');
+// 타입스크립트는 result가 string인지 number인지 모름
+//myName.split(' ') -> 불가능
+// 형변환으로는 알려줄 수 있음
+// const myName = add('Jang', ' Yujin') as string; ->  최선?
+// 오버로딩은 타입스크립트가 스스로 반환값 타입을 식별할 수 없을 때 사용하는 것이다. 
