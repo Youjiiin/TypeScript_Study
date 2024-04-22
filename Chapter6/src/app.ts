@@ -171,3 +171,8 @@ const fetchedUserData = {
 //console.log(fetchedUserData.job && fetchedUserData.job.title);
 console.log(fetchedUserData?.job?.title);
 // 옵셔널 체이닝 : 중첩된 속성이랑, 객체 안에 중첩된 객체의 정보를 안전하게 접근하게 해준다.
+
+// null 병합 연산자
+const userInput = '';
+const storedData = userInput ?? 'DEFAULT';
+console.log(storedData);
