@@ -124,3 +124,18 @@ const userInputElement = document.getElementById('user-input') as HTMLInputEleme
 if (userInputElement){
     userInputElement.value = 'Hiiiiii';
 }
+
+// 인덱스 타입
+// 객체의 속성 관련해서 보다 유연한 객체를 생성
+interface ErrorContainer {
+    //booleand은 X
+    // 인터페이스로 어떤 객체를 만들든지 타입은 string일 것이다. (이외의 속성들도 모두 string이어야 함)
+    // 갯수 제한 X
+    //[속성 이름의 타입] : 속성의 타입
+    [key: string]: string;
+}
+
+const errorBag: ErrorContainer = {
+    email: 'Not valid',
+    username: 'Must start with a capital character!'
+};
