@@ -32,3 +32,20 @@ const mergedObj = merge<{name: string}, {age: number}>({name: 'Yujin'}, {age: 25
 const mergedObj2 = merge({name: 'Yujin', hobbies: ['Game']}, {age: 25});
 console.log(mergedObj.age);
 console.log(mergedObj2.hobbies);
+
+// 다루는 데이터 타입을 구체적으로 명시(일반 함수) -> ex) length
+interface Lengthy { //필수
+    length: number;
+}
+// 정확한 타입을 제한하지 않음
+function countAndDescribe<T extends Lengthy>(element:T): [T, string] {
+    let descriptionText = 'no value'
+    if (element.length === 1) {
+        descriptionText = 'Got 1 element.'
+    } else if (element.length > 1) {
+        descriptionText = 'Got ' + element.length + ' elements.'
+    }
+    return [element, descriptionText];
+}
+
+console.log(countAndDescribe([]));
