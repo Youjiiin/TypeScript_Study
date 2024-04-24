@@ -17,7 +17,11 @@
 
 // 제네릭 함수
 // 어떤 타입이 들어올지 모르기에 아래와 같이 지정
-function merge<T, U>(objA: T, objB: U) : T & U {
+
+// 제약 조건 걸기
+// T타입은 어떤 구조의 객체여도 되지만, 어쨋든 객체여야 한다고 한계를 지정 -> extends object (다른 타입 가능)
+// -> 무조건 해야하는 것은 아님
+function merge<T extends object, U extends object >(objA: T, objB: U) : T & U {
     return Object.assign({}, objA, objB);
 } 
 
