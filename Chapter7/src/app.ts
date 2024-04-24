@@ -49,3 +49,11 @@ function countAndDescribe<T extends Lengthy>(element:T): [T, string] {
 }
 
 console.log(countAndDescribe([]));
+
+// 제네릭이 없다면, 정말 key가 있는지 보장할 수 없기에 오류 발생
+// extends keyof : 속성임을 알려주기
+function extractAndConvert<T extends object, U extends keyof T>(obj: T, key: U) {
+    return obj[key];
+}
+
+console.log(extractAndConvert({name: 'Yujin'}, 'name'));
