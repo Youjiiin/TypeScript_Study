@@ -57,3 +57,43 @@ function extractAndConvert<T extends object, U extends keyof T>(obj: T, key: U) 
 }
 
 console.log(extractAndConvert({name: 'Yujin'}, 'name'));
+
+
+// 제네릭 클래스
+// 클래스 뿐만 아니라 메서드에도 제네릭을 적용할 수 있다.
+class DataStorage<T extends string | number | boolean> {
+    private data: T[] = [];
+
+    addItem(item: T) {
+        this.data.push(item);
+    }
+
+    removeItem(item: T) {
+        if (this.data.indexOf(item) === -1) {
+            return;
+        }
+        this.data.splice(this.data.indexOf(item), 1);
+    }
+
+    getItems() {
+        return [...this.data];
+    }
+}
+
+const textStorage = new DataStorage<string>();
+textStorage.addItem('Yujin');
+textStorage.addItem('Yujiiiiiin');
+textStorage.removeItem('Yujin');
+console.log(textStorage.getItems());
+
+// 숫자만 저장 가능
+const numberStorage = new DataStorage<number>();
+
+// 객체와 같이 비원시값(참조값)을 잘 다루지 못한다.
+// indexOf로 인해서 -> 주소를 찾을 수 없어서 -1반환, 맨 마지막 요소만을 제거 
+// const objStorage = new DataStorage<object>();
+// const yujinObj = {name: 'Yujin'};
+// objStorage.addItem(yujinObj);
+// objStorage.addItem({name: 'Yujiiiiiiiiiiiin'});
+// objStorage.removeItem(yujinObj);
+// console.log(objStorage.getItems());
