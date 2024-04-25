@@ -64,6 +64,10 @@ console.log(extractAndConvert({name: 'Yujin'}, 'name'));
 // 클래스 뿐만 아니라 메서드에도 제네릭을 적용할 수 있다.
 class DataStorage<T extends string | number | boolean> {
     private data: T[] = [];
+    // private data: (string | number | boolean)[] = [];
+    // 위와 같이 작성하면 제네릭 방식으로 초기화가 불가능하다.
+    // private data: string []| number[] | boolean[] = [];
+    // 위와 같이 작성하면, 어떤 타입이든 사용가능하다. -> 원하는 것은 셋 중 하나의 타입을 선택하면 그 타입만 사용가능하토록.
 
     addItem(item: T) {
         this.data.push(item);
