@@ -1,4 +1,5 @@
 // 제네릭
+// 타입 안정성 + 유연성
 // const names : any[] = [];
 // //Array 타입으로 명시하면 오류 -> any[] / Array<string>과 같이 명시
 // names[0].split(' ');
@@ -97,3 +98,27 @@ const numberStorage = new DataStorage<number>();
 // objStorage.addItem({name: 'Yujiiiiiiiiiiiin'});
 // objStorage.removeItem(yujinObj);
 // console.log(objStorage.getItems());
+
+// Partial 타입
+// 옵션 전환
+// Partial<타입> : '타입'이 될것임을 명시
+interface CourseGoal {
+    title: string;
+    description: string;
+    completeUntil: Date;
+}
+
+function createCourseGoal(title: string, description: string, date: Date): CourseGoal {
+    let CourseGoal : Partial<CourseGoal> = {};
+    CourseGoal.title = title;
+    CourseGoal.description = description;
+    CourseGoal.completeUntil = date;
+
+    // 형 변환을 해주어야 한다. 
+    return CourseGoal as CourseGoal;
+}
+
+// ReadOnly
+// 수정 불가능 : 읽기 전용 - 객체, 배열
+const names: Readonly<string[]> = ['Yujin', 'name'];
+// 수정 불가능 -> names.push('Yuujiin');
