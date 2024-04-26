@@ -16,15 +16,21 @@ function Logger(logString: string) {
 
 function WithTemplate(tempalte: string, hookId: string) {
     console.log('TEMPLATE FACTORY');
-    return function(constructor: any) { // _ : 인자가 들어오는 걸 알지만 필요는 없음
-        console.log('rendering template');
-        const hookEl = document.getElementById(hookId);
-        const p = new constructor();
-        if (hookEl) {
-            hookEl.innerHTML = tempalte;
-            hookEl.querySelector('h1')!.textContent = p.name;
+    return function<T extends {new(...args: any[]): {name: string}}>(originalConstructor: T) { // _ : 인자가 들어오는 걸 알지만 필요는 없음
+        // 객체의 인스턴스가 생성될 때만 렌더링됨
+        return class extends originalConstructor {
+            constructor(..._: any[]) {
+                //originalConstructor 호출
+                super();
+                console.log('rendering template');
+                const hookEl = document.getElementById(hookId);
+                if (hookEl) {
+                    hookEl.innerHTML = tempalte;
+                    hookEl.querySelector('h1')!.textContent = this.name;
+                }
+            }
         }
-    }
+    };
 }
 
 // 데코레이터는 클래스가 인스턴스화될 때가 아니라 정의될 때 실행된다. (자바스크립트가 클래스 정의와 생성자 함수 정의를 만난 시점)
@@ -118,3 +124,34 @@ class Product {
 //데코레이터를 사용해 배후 작업을 수행할 수 있는 것, 데코레이터가 실행되는 시점에 수행할 코드만 구성하면됨
 const p1 = new Product('Book', 19);
 const p2 = new Product('Book 2', 29);
+
+function Autobind(_: any, _2: string | Symbol | number, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        enumerable: false,
+        get() {
+            // this: 게터 메서드를 실행시킨 대상
+            // 게터 메서드는 언제나 자신이 속한 실제 객체에 의해 실행된다.
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
+        },
+    };
+    return adjDescriptor;
+}
+
+class Printer {
+    message = 'This works!'
+
+    @Autobind
+    showMessage() {
+        console.log(this.message);
+    }
+}
+
+const p = new Printer();
+
+const button = document.querySelector('button')!;
+button.addEventListener('click', p.showMessage);
+// p.showMessage가이벤트 리스너에서 호출되는 경우 this가 이벤트의 대상을 가리킨다. (이벤트 대상에 바인딩)
+// p에 바인딩하도록 .bind(p)
