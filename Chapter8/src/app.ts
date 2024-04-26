@@ -113,3 +113,8 @@ class Product {
         return this._price * (1 + tax);
     }
 }
+//데코레이터가 product를 인스턴스화 하지 않아도 된다.
+//해도 실행되는 횟수는 변하지 않음 -> 클래스를 정의한느 시점에 실행된다.
+//데코레이터를 사용해 배후 작업을 수행할 수 있는 것, 데코레이터가 실행되는 시점에 수행할 코드만 구성하면됨
+const p1 = new Product('Book', 19);
+const p2 = new Product('Book 2', 29);
