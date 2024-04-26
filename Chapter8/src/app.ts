@@ -50,3 +50,66 @@ class Person {
 const pers = new Person();
 
 console.log(pers);
+
+// 첫 번째 인자 : 프로퍼티의 타겟 - 인스턴스 프로퍼티 같은 경우에 타깃 인자로 생성된 객체의 프로토타입이 들어오게 된다.
+// 두 번째 인자 : 프로퍼티의 이름
+
+// 데코레이터 함수는 프로퍼티가 정의되는 시점에서 실행
+function Log(target: any, propertyName: string | Symbol) {
+    console.log('Property decorater!');
+    console.log(target, propertyName);
+}
+
+// target: 프로토타입, 인스턴스 접근자, 정적 접근자일 경우 생성자 함수일 수도 있다.
+// name : 접근자의 이름
+// descriptor: 프로퍼티 설명자
+function Log2(target: any, name: string, descriptor: PropertyDescriptor) {
+    console.log('Accessor decorator!');
+    console.log(target);
+    console.log(name);
+    console.log(descriptor);
+}
+
+// target: 인스턴스 메서드 또는 객체 프로토 타입 | 정적 메서드일 경우, 생성자 함수
+// name: 메서드 이름
+// descriptor: 설명자
+function Log3(target: any, name: string | Symbol, descriptor: PropertyDescriptor) {
+    console.log('Method decorator!');
+    console.log(target);
+    console.log(name);
+    console.log(descriptor);
+}
+
+// name: 매개변수를 사용하는 메서드의 이름
+// position: 매개변수의 위치값(몇번재 매개변수 인가)
+function Log4(target: any, name: string | Symbol, position: number) {
+    console.log('parameter decorator!');
+    console.log(target);
+    console.log(name);
+    console.log(position);
+}
+
+class Product {
+    @Log
+    title: string;
+    private _price: number;
+
+    @Log2
+    set price(val: number) {
+        if (val > 0) {
+            this._price = val;
+        } else {
+            throw new Error('Invalid price');
+        }
+    }
+
+    constructor(t: string, p: number) {
+        this.title = t;
+        this._price = p;
+    }
+
+    @Log3
+    getPriceWithTax(@Log4 tax: number) {
+        return this._price * (1 + tax);
+    }
+}
