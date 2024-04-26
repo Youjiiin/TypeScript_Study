@@ -155,3 +155,81 @@ const button = document.querySelector('button')!;
 button.addEventListener('click', p.showMessage);
 // p.showMessage가이벤트 리스너에서 호출되는 경우 this가 이벤트의 대상을 가리킨다. (이벤트 대상에 바인딩)
 // p에 바인딩하도록 .bind(p)
+
+interface ValidatorConfig  {
+    [property: string]: {
+        [validatableProp: string]: string[] // ['required', 'positive']
+    }
+}
+
+const registeredValidators: ValidatorConfig = {};
+ 
+function Required(target: any, propName: string) {
+    registeredValidators[target.constructor.name] = {
+        ...registeredValidators[target.constructor.name],
+        [propName]: [...(registeredValidators[target.constructor.name]?.[propName] ?? []), 'required']
+    };
+}
+ 
+function PositiveNumber(target: any, propName: string) {
+    registeredValidators[target.constructor.name] = {
+        ...registeredValidators[target.constructor.name],
+        [propName]: [...(registeredValidators[target.constructor.name]?.[propName] ?? []), 'positive']
+    };
+}
+
+function validate(obj: any) {
+    const objValidatorConfig = registeredValidators[obj.constructor.name];
+    if (!objValidatorConfig) {
+        return true;
+    }
+    let isValid = true;
+    for (const prop in objValidatorConfig) {
+        for (const validator of objValidatorConfig[prop]) {
+            switch (validator) {
+                case 'required':
+                    isValid = isValid && !!obj[prop];
+                    break;
+                case 'positive':
+                    isValid = isValid && obj[prop] > 0;
+                    break;
+            }
+        }
+    }
+    return isValid;
+}
+
+class Course {
+    @Required
+    title: string;
+    @PositiveNumber
+    price: number;
+
+    constructor(t: string, p: number) {
+        this.title = t;
+        this.price = p;
+    }
+}
+
+const courseForm = document.querySelector('form')!;
+courseForm.addEventListener('submit', event => {
+    // 폼 제출 X, http 요청 X
+    event.preventDefault();
+
+    const titleEl = document.getElementById('title') as HTMLInputElement;
+    const priceEl = document.getElementById('price') as HTMLInputElement;
+
+    const title = titleEl.value;
+    const price = +priceEl.value; 
+
+    const createdCourse = new Course(title, price);
+
+    if (!validate(createdCourse)) {
+        alert('유효하지 않음');
+        return;
+    }
+    console.log(createdCourse);
+})
+
+//참고자료
+// ts class validator
