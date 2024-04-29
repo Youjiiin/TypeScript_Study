@@ -1,3 +1,21 @@
+// 자동 바인드 데코레이터
+function autobind(
+    target: any,
+    methodName: string,
+    descriptor: PropertyDescriptor
+    ) {
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        get() {
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
+        }
+    };
+    return adjDescriptor;
+}
+
+// 프로젝트 input 클래스
 class ProjectInput {
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement;
@@ -26,6 +44,7 @@ class ProjectInput {
         this.attach();
     }
 
+    @autobind
     private submitHandler(event: Event) {
         event.preventDefault();
         // this가 이벤트의 현재 타깃에 바인딩 되기 때문에 vlaue값을 가져오지 못한다.
@@ -33,7 +52,7 @@ class ProjectInput {
     }
 
     private configure() {
-        this.element.addEventListener('submit', this.submitHandler.bind(this));
+        this.element.addEventListener('submit', this.submitHandler);
     }
 
     private attach() {
