@@ -44,11 +44,42 @@ class ProjectInput {
         this.attach();
     }
 
+    private gatherUserInput(): [string, string, number] | void {
+        const enteredTitle = this.titleInputElement.value;
+        const enteredDescription = this.descriptionInputElement.value;
+        const enteredPeople = this.peopleInputElement.value;
+
+        if (
+            enteredTitle.trim().length === 0 || enteredDescription.trim().length === 0 || 
+            enteredPeople.trim().length === 0
+        ) {
+            alert('유효하지 않은 입력입니다.');
+            return;
+        } else {
+            return [enteredTitle, enteredDescription, +enteredPeople];
+        }
+    }
+
+    private clearInputs() {
+        this.titleInputElement.value = '';
+        this.descriptionInputElement.value = '';
+        this.peopleInputElement.value = '';
+    }
+
     @autobind
     private submitHandler(event: Event) {
         event.preventDefault();
-        // this가 이벤트의 현재 타깃에 바인딩 되기 때문에 vlaue값을 가져오지 못한다.
-        console.log(this.titleInputElement.value); 
+    
+        // this가 이벤트의 현재 타깃에 바인딩 되기 때문에 vlaue값을 가져오지 못한다. -> submitHandler 호출할 때 .bind(this)를 해주거나, 데코레이터를 만든다.
+        //console.log(this.titleInputElement.value); 
+
+        const userInput = this.gatherUserInput();
+        // 튜플은 타입스크립트에만 있는 것, 자바스크립트에서는 그냥 배열취급
+        if (Array.isArray(userInput)) {
+            const [title, desc, people] = userInput;
+            console.log(title, desc, people);
+            this.clearInputs();
+        }
     }
 
     private configure() {
