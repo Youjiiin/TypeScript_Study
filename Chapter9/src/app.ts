@@ -157,6 +157,15 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
     private project: Project;
 
+    // 보통 필드 아래, 생성자 위에 게터를 넣어준다.
+    get persons() {
+        if (this.project.people === 1) {
+            return '단 1명'
+        } else {
+            return `무려 ${this.project.people}명`
+        }
+    }
+
     constructor(hostId: string, project: Project) {
         super('single-project', hostId, false, project.id);
         this.project = project;
@@ -168,7 +177,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
     configure(): void {}
     renderContent(): void {
         this.element.querySelector('h2')!.textContent = this.project.title;
-        this.element.querySelector('h3')!.textContent = this.project.people.toString();
+        this.element.querySelector('h3')!.textContent = this.persons;
         this.element.querySelector('p')!.textContent = this.project.descriptioin;
     }
 }
