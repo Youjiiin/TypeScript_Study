@@ -1,7 +1,21 @@
+enum ProjectStatus { Active, Finished }
+// 프로젝트 타입
+class Project {   
+    constructor(
+        public id: string, 
+        public title: string, 
+        public descriptioin: string, 
+        public people: number, 
+        public status: ProjectStatus) {}
+}
+
+// 커스텀 타입
+type Listener = (items: Project[]) => void;
+
 // 프로젝트 상태관리
 class ProjectState {
-    private listeners: any[] = [];
-    private projects: any[] = [];
+    private listeners: Listener[] = [];
+    private projects: Project[] = [];
     private static instance: ProjectState;
 
     // private 생성자를 사용해서 싱글톤 클래스임을 보장
@@ -17,17 +31,18 @@ class ProjectState {
         return this.instance;
     }
 
-    addListeners(listenrFn: Function) {
+    addListeners(listenrFn: Listener) {
         this.listeners.push(listenrFn);
     }
 
     addProject(title: string, description: string, numOfPeople: number) {
-        const newProject = {
-            id: Math.random().toString(),
-            title: title,
-            description: description,
-            people: numOfPeople
-        };
+        const newProject = new Project(
+            Math.random().toString(),
+            title,
+            description,
+            numOfPeople,
+            ProjectStatus.Active
+        );
         this.projects.push(newProject);
         for (const listenrFn of this.listeners) {
             //원본참조를 전달하면 버그발생 우려
@@ -106,7 +121,7 @@ class ProjectList {
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement;
     element: HTMLElement;
-    assignedProjects: any[];
+    assignedProjects: Project[];
 
     constructor(private type: 'active' | 'finished') {
         this.templateElement = <HTMLTemplateElement>document.getElementById('project-list')!;
@@ -117,7 +132,7 @@ class ProjectList {
         this.element = importedNode.firstElementChild as HTMLElement;
         this.element.id = `${this.type}-projects`;
 
-        projectState.addListeners((projects: any[]) => {
+        projectState.addListeners((projects: Project[]) => {
             this.assignedProjects = projects;
             this.renderProjects();
         });
