@@ -10,17 +10,24 @@ class Project {
 }
 
 // 커스텀 타입
-type Listener = (items: Project[]) => void;
+type Listener<T> = (items: T[]) => void;
+
+class State<T> {
+    protected listeners: Listener<T>[] = [];
+
+    addListeners(listenrFn: Listener<T>) {
+        this.listeners.push(listenrFn);
+    }
+}
 
 // 프로젝트 상태관리
-class ProjectState {
-    private listeners: Listener[] = [];
+class ProjectState extends State<Project>{
     private projects: Project[] = [];
     private static instance: ProjectState;
 
     // private 생성자를 사용해서 싱글톤 클래스임을 보장
     private constructor() {
-
+        super();
     }
 
     static getInstance() {
@@ -29,10 +36,6 @@ class ProjectState {
         }
         this.instance = new ProjectState();
         return this.instance;
-    }
-
-    addListeners(listenrFn: Listener) {
-        this.listeners.push(listenrFn);
     }
 
     addProject(title: string, description: string, numOfPeople: number) {
@@ -116,22 +119,55 @@ function autobind(
     return adjDescriptor;
 }
 
-//ProjectList 클래스
-class ProjectList {
+// 컴포넌트 베이스 클래스
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     templateElement: HTMLTemplateElement;
-    hostElement: HTMLDivElement;
-    element: HTMLElement;
+    hostElement: T;
+    element: U;
+
+    constructor(
+        templateId: string, 
+        hostElementId: string, 
+        insertAtStart: boolean,
+        newElementId?: string | undefined,
+    ) {
+        this.templateElement = <HTMLTemplateElement>document.getElementById(templateId)!;
+        this.hostElement = document.getElementById(hostElementId)! as T;
+
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild as U;
+        if(newElementId) {
+            this.element.id = newElementId;
+        }
+        this.attach(insertAtStart);
+    }
+
+    private attach(insertAtBeginning: boolean) {
+        this.hostElement.insertAdjacentElement(
+            insertAtBeginning ? 'beforeend' : 'beforeend', 
+            this.element
+        );
+    }
+
+    abstract configure(): void;
+    abstract renderContent(): void;
+}
+
+
+//ProjectList 클래스
+class ProjectList extends Component<HTMLDivElement, HTMLElement>{
     assignedProjects: Project[];
 
     constructor(private type: 'active' | 'finished') {
-        this.templateElement = <HTMLTemplateElement>document.getElementById('project-list')!;
-        this.hostElement = <HTMLDivElement>document.getElementById('app')!;
+        super('project-list', 'app', false, `${type}-projects`);
         this.assignedProjects = [];
 
-        const importedNode = document.importNode(this.templateElement.content, true);
-        this.element = importedNode.firstElementChild as HTMLElement;
-        this.element.id = `${this.type}-projects`;
+        // 상속받는 클래스의 생성자는 베이스 클래스 생성자가 실행을 완료한 후에 설정되므로 configure/renderContent는 그것에 의존해서 자식 클래스에서 호출하는 것이 안전하다
+        this.configure();
+        this.renderContent();
+    }
 
+    configure(): void {
         projectState.addListeners((projects: Project[]) => {
             // true리턴 : 생성된 배열에 그 항목을 유지
             // flase리턴 : relevantProjects에서 항목 삭제
@@ -144,14 +180,11 @@ class ProjectList {
             this.assignedProjects = relevantProjects;
             this.renderProjects();
         });
-
-        this.attach();
-        this.renderContent();
     }
 
     private renderProjects() {
         const listEl = document.getElementById(`${this.type}-project-list`)! as HTMLUListElement;
-        
+
         // 모든 콘텐츠를 지워서 중복 렌더링을 방지
         listEl.innerHTML = '';
 
@@ -162,36 +195,22 @@ class ProjectList {
         }
     }
 
-    private renderContent() {
+    renderContent() {
         const listId = `${this.type}-project-list`;
         this.element .querySelector('ul')!.id = listId;
         this.element.querySelector('h2')!.textContent = this.type.toUpperCase() + ' PROJECTS';
     }
-
-    private attach() {
-        this.hostElement.insertAdjacentElement('beforeend', this.element);
-    }
 }
 
+
 // 프로젝트 input 클래스
-class ProjectInput {
-    templateElement: HTMLTemplateElement;
-    hostElement: HTMLDivElement;
-    element: HTMLFormElement;
+class ProjectInput extends Component<HTMLDivElement, HTMLFormElement>{
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
     peopleInputElement: HTMLInputElement;
 
     constructor() {
-        this.templateElement = <HTMLTemplateElement>document.getElementById('project-input')!;
-        // === this.templateElement = document.getElementById('project-input')! as HTMLTemplateElement;
-        this.hostElement = <HTMLDivElement>document.getElementById('app')!;
-
-        const importedNode = document.importNode(this.templateElement.content, true);
-        // 위는 생성자 안에 있고, DocumentFragment이기 때문에 삽입할 수 없다.(insertAdjacentElement)에
-        // HTMLFormElement가 될 것이라고 알려줘야 한다. 
-        this.element = importedNode.firstElementChild as HTMLFormElement;
-        this.element.id = 'user-input';
+        super('project-input', 'app', true, 'user-input');
 
         // 요소에 접근
         this.titleInputElement = this.element.querySelector('#title') as HTMLInputElement;
@@ -199,8 +218,13 @@ class ProjectInput {
         this.peopleInputElement = this.element.querySelector('#people') as HTMLInputElement;
 
         this.configure();
-        this.attach();
     }
+
+    configure() {
+        this.element.addEventListener('submit', this.submitHandler);
+    }
+
+    renderContent(): void {}
 
     private gatherUserInput(): [string, string, number] | void {
         const enteredTitle = this.titleInputElement.value;
@@ -255,15 +279,6 @@ class ProjectInput {
             projectState.addProject(title, desc, people);
             this.clearInputs();
         }
-    }
-
-    private configure() {
-        this.element.addEventListener('submit', this.submitHandler);
-    }
-
-    private attach() {
-        // insertAdjacentElement : HTML 요소를 삽입할 때 사용(JS)
-        this.hostElement.insertAdjacentElement('afterbegin', this.element);
     }
 }
 
