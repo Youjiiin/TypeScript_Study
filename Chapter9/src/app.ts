@@ -1,3 +1,44 @@
+// 프로젝트 상태관리
+class ProjectState {
+    private listeners: any[] = [];
+    private projects: any[] = [];
+    private static instance: ProjectState;
+
+    // private 생성자를 사용해서 싱글톤 클래스임을 보장
+    private constructor() {
+
+    }
+
+    static getInstance() {
+        if (this.instance) {
+            return this.instance;
+        }
+        this.instance = new ProjectState();
+        return this.instance;
+    }
+
+    addListeners(listenrFn: Function) {
+        this.listeners.push(listenrFn);
+    }
+
+    addProject(title: string, description: string, numOfPeople: number) {
+        const newProject = {
+            id: Math.random().toString(),
+            title: title,
+            description: description,
+            people: numOfPeople
+        };
+        this.projects.push(newProject);
+        for (const listenrFn of this.listeners) {
+            //원본참조를 전달하면 버그발생 우려
+            listenrFn(this.projects.slice());
+        }
+    }
+}
+
+//addProject를 사용하기 위해 전역 인스턴스 생성
+const projectState = ProjectState.getInstance();
+
 // 유효성 검증
 interface Validatable {
     value: string | number;
@@ -65,16 +106,33 @@ class ProjectList {
     templateElement: HTMLTemplateElement;
     hostElement: HTMLDivElement;
     element: HTMLElement;
+    assignedProjects: any[];
 
     constructor(private type: 'active' | 'finished') {
         this.templateElement = <HTMLTemplateElement>document.getElementById('project-list')!;
         this.hostElement = <HTMLDivElement>document.getElementById('app')!;
+        this.assignedProjects = [];
 
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild as HTMLElement;
         this.element.id = `${this.type}-projects`;
+
+        projectState.addListeners((projects: any[]) => {
+            this.assignedProjects = projects;
+            this.renderProjects();
+        });
+
         this.attach();
         this.renderContent();
+    }
+
+    private renderProjects() {
+        const listEl = document.getElementById(`${this.type}-project-list`)! as HTMLUListElement;
+        for (const prjItem of this.assignedProjects) {
+            const listItem = document.createElement('li');
+            listItem.textContent = prjItem.title;
+            listEl?.appendChild(listItem)
+        }
     }
 
     private renderContent() {
@@ -167,7 +225,7 @@ class ProjectInput {
         // 튜플은 타입스크립트에만 있는 것, 자바스크립트에서는 그냥 배열취급
         if (Array.isArray(userInput)) {
             const [title, desc, people] = userInput;
-            console.log(title, desc, people);
+            projectState.addProject(title, desc, people);
             this.clearInputs();
         }
     }
