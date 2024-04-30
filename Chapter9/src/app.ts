@@ -62,11 +62,23 @@ class ProjectState extends State<Project>{
             ProjectStatus.Active
         );
         this.projects.push(newProject);
+        this.updateListeners();
+    }
+
+    moveProject(projectId: string, newStatus: ProjectStatus) {
+        const project = this.projects.find(prj => prj.id === projectId);
+        if (project && project.status !== newStatus) {
+            project.status = newStatus;
+            this.updateListeners();
+        }
+    }
+    
+    private updateListeners() {
         for (const listenrFn of this.listeners) {
-            //원본참조를 전달하면 버그발생 우려
             listenrFn(this.projects.slice());
         }
     }
+    
 }
 
 //addProject를 사용하기 위해 전역 인스턴스 생성
@@ -191,12 +203,15 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement>
     }
 
     @autobind
-    dragStartHandler(event: DragEvent): void {
-        console.log(event);
+    dragStartHandler(event: DragEvent) {
+        // dataTransfer는 dragEvent의 속성 : dragEvent에 데이터를 첨부할 수 있다.
+        event.dataTransfer!.setData('text/plain', this.project.id);
+        // 커서 모양 제어, 옮긴다는 의도를 알림
+        event.dataTransfer!.effectAllowed = 'move';
     }
 
-    dragEndHandler(event: DragEvent): void {
-        
+    dragEndHandler(_: DragEvent) {
+        console.log('drag End');
     }
 
     configure(): void {
@@ -211,7 +226,8 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement>
 }
 
 //ProjectList 클래스
-class ProjectList extends Component<HTMLDivElement, HTMLElement>{
+class ProjectList extends Component<HTMLDivElement, HTMLElement>
+implements DragTarget{
     assignedProjects: Project[];
 
     constructor(private type: 'active' | 'finished') {
@@ -223,7 +239,34 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement>{
         this.renderContent();
     }
 
+    @autobind
+    dragOverHandler(event: DragEvent): void {
+        if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+            event.preventDefault();
+            const listEl = this.element.querySelector('ul')!;
+            listEl.classList.add('droppable');
+        }
+    }
+
+    @autobind
+    dropHandler(event: DragEvent): void {
+        const prjID = event.dataTransfer!.getData('text/plain');
+        projectState.moveProject(
+            prjID, 
+            this.type === 'active' ? ProjectStatus.Active : ProjectStatus.Finished);
+    }   
+
+    @autobind
+    dragLeaveHandler(_: DragEvent): void {
+        const listEl = this.element.querySelector('ul')!;
+        listEl.classList.remove('droppable');
+    }
+
     configure(): void {
+        this.element.addEventListener('dragover', this.dragOverHandler);
+        this.element.addEventListener('dragleave', this.dragLeaveHandler);
+        this.element.addEventListener('drop', this.dropHandler);
+
         projectState.addListeners((projects: Project[]) => {
             // true리턴 : 생성된 배열에 그 항목을 유지
             // flase리턴 : relevantProjects에서 항목 삭제
